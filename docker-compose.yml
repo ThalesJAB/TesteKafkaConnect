@@ -31,6 +31,7 @@ services:
     image: confluentinc/cp-kafka-connect:latest
     depends_on:
       - kafka
+      - postgres
     networks:
       - kafka-network
     environment:
@@ -47,7 +48,7 @@ services:
       CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
       CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/usr/share/plugins"
     ports:
       - "8083:8083"
@@ -55,24 +56,28 @@ services:
       - bash
       - -c
       - |
-        # Baixa o driver JDBC do H2
-        wget -P /usr/share/plugins https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar
+        # Baixa o driver JDBC do PostgreSQL
+        wget -P /usr/share/plugins https://jdbc.postgresql.org/download/postgresql-42.6.0.jar
         # Instala o conector JDBC automaticamente
         confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:latest
+        # Adiciona o driver ao classpath explicitamente
+        export CLASSPATH=/usr/share/plugins/postgresql-42.6.0.jar
         # Inicia o Kafka Connect
         /etc/confluent/docker/run
     volumes:
-      - ./plugins:/usr/share/plugins
+      - kafka-connect-plugins:/usr/share/plugins
 
-  h2-database:
-    image: oscarfonts/h2
-    ports:
-      - "1521:1521"
-      - "81:81"
+  postgres:
+    image: postgres:latest
+    container_name: postgres
     environment:
-      H2_OPTIONS: "-ifNotExists"
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    ports:
+      - "5432:5432"
     volumes:
-      - ./h2-data:/opt/h2-data
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - kafka-network
 
@@ -89,3 +94,7 @@ services:
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     networks:
       - kafka-network
+
+volumes:
+  kafka-connect-plugins:
+  postgres-data:

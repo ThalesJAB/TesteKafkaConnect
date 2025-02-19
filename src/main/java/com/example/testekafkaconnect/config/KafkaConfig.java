@@ -1,6 +1,5 @@
 package com.example.testekafkaconnect.config;
 
-import com.example.testekafkaconnect.model.User;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -15,8 +14,9 @@ import java.util.Map;
 
 @Configuration
 public class KafkaConfig {
+
     @Bean
-    public ProducerFactory<String, User> producerFactory() {
+    public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -26,8 +26,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, User> kafkaTemplate() {
+    public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
-
 }
