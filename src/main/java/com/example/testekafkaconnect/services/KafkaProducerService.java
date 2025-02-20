@@ -11,7 +11,7 @@ import java.util.Map;
 public class KafkaProducerService {
 
 
-    private static final String TOPIC = "meu-topico";  // Nome do tópico Kafka
+    private static final String TOPIC = "meu-topico";
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -20,7 +20,6 @@ public class KafkaProducerService {
     }
 
     public void sendMessage(User user) {
-        // Criando estrutura esperada pelo Kafka Connect
         Map<String, Object> message = Map.of(
                 "schema", Map.of(
                         "type", "struct",
